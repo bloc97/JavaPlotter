@@ -18,6 +18,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Font;
@@ -25,8 +26,11 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import org.jzy3d.chart.AWTChart;
 import org.jzy3d.chart.Chart;
 import org.jzy3d.chart.ChartLauncher;
+import org.jzy3d.javafx.JavaFXChartFactory;
+import org.jzy3d.plot3d.rendering.canvas.Quality;
 
 /**
  *
@@ -39,6 +43,8 @@ import org.jzy3d.chart.ChartLauncher;
     http://jeval.sourceforge.net/
     https://stackoverflow.com/questions/11117158/java-formula-evaluation-library-with-out-of-order-variables-feature
 
+* 
+*   Use Textarea and parse one function per line instead of individual textfields
 */
 
 public class JavaPlotter extends Application {
@@ -104,9 +110,9 @@ public class JavaPlotter extends Application {
         btn.setOnAction((ActionEvent e) -> {
             try {
                 List<String> stringList = new LinkedList<>();
-                for (TextField textField : textFieldList) {
+                textFieldList.forEach((textField) -> {
                     stringList.add(textField.getText());
-                }
+                });
                 float min = -10;
                 float max = 10;
                 int n = 40;
@@ -118,8 +124,13 @@ public class JavaPlotter extends Application {
                     
                 }
                 
-                Chart c = ChartPlotter.get3DChart(stringList, min, max, n);
-                ChartLauncher.openChart(c, stringList.get(0));
+                JavaFXChartFactory factory = new JavaFXChartFactory();
+                AWTChart chart = ChartPlotter.get3DAWTChart(factory, stringList, min, max, n);
+
+                ImageView view = factory.bindImageView(chart);
+                grid.add(view, 1, labelList.size() + 1, 20, 1);
+                primaryStage.sizeToScene();
+                //ChartLauncher.openChart(c, stringList.get(0));
                 //c.open(stringList.get(0), 800, 600);
             } catch (Exception ex) {
                 
