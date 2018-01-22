@@ -29,8 +29,12 @@ import javafx.stage.WindowEvent;
 import org.jzy3d.chart.AWTChart;
 import org.jzy3d.chart.Chart;
 import org.jzy3d.chart.ChartLauncher;
+import org.jzy3d.chart.ContourChart;
+import org.jzy3d.chart.factories.ContourChartComponentFactory;
+import org.jzy3d.chart.factories.IChartComponentFactory;
 import org.jzy3d.javafx.JavaFXChartFactory;
 import org.jzy3d.plot3d.rendering.canvas.Quality;
+import org.jzy3d.plot3d.rendering.view.modes.ViewPositionMode;
 
 /**
  *
@@ -52,8 +56,46 @@ public class JavaPlotter extends Application {
     private final List<Label> labelList = new LinkedList<>();
     private final List<TextField> textFieldList = new LinkedList<>();
     
-    private GridPane grid = new GridPane();
+    private final GridPane grid = new GridPane();
+    private final TextField minField, maxField, nField;
+                    
+    private final JavaFXChartFactory factory = new JavaFXChartFactory();
     
+    private Chart chart;
+    private ImageView chartView;
+    
+    public JavaPlotter() {
+        minField = new TextField("-3");
+        maxField = new TextField("3");
+        nField = new TextField("50");
+        
+        grid.setAlignment(Pos.TOP_CENTER);
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(25, 25, 25, 25));
+        
+        Text scenetitle = new Text("3D Function Plotter");
+        scenetitle.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
+        grid.add(scenetitle, 0, 0, 2, 1);
+        
+        Label minLabel = new Label("Min :");
+        grid.add(minLabel, 4, 0);
+
+        minField.setPrefWidth(40);
+        grid.add(minField, 5, 0);
+        
+        Label maxLabel = new Label("Max :");
+        grid.add(maxLabel, 6, 0);
+
+        maxField.setPrefWidth(40);
+        grid.add(maxField, 7, 0);
+        
+        Label nLabel = new Label("N :");
+        grid.add(nLabel, 11, 0);
+
+        nField.setPrefWidth(40);
+        grid.add(nField, 12, 0);
+    }
     /**
      * @param args the command line arguments
      */
@@ -64,41 +106,6 @@ public class JavaPlotter extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         primaryStage.setTitle("Multiple Plotter");
-        primaryStage.show();
-        
-        grid.setAlignment(Pos.TOP_CENTER);
-        
-        
-        Text scenetitle = new Text("3D Function Plotter");
-        scenetitle.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
-        grid.add(scenetitle, 0, 0, 2, 1);
-        grid.setHgap(10);
-        grid.setVgap(10);
-        grid.setPadding(new Insets(25, 25, 25, 25));
-        
-        Label minLabel = new Label("Min :");
-        grid.add(minLabel, 4, 0);
-
-        TextField minField = new TextField();
-        minField.setText("-3");
-        minField.setPrefWidth(40);
-        grid.add(minField, 5, 0);
-        
-        Label maxLabel = new Label("Max :");
-        grid.add(maxLabel, 6, 0);
-
-        TextField maxField = new TextField();
-        maxField.setText("3");
-        maxField.setPrefWidth(40);
-        grid.add(maxField, 7, 0);
-        
-        Label nLabel = new Label("N :");
-        grid.add(nLabel, 11, 0);
-
-        TextField nField = new TextField();
-        nField.setText("60");
-        nField.setPrefWidth(40);
-        grid.add(nField, 12, 0);
         
         
         Button btn = new Button("Plot");
@@ -107,12 +114,18 @@ public class JavaPlotter extends Application {
         hbBtn.getChildren().add(btn);
         grid.add(hbBtn, 21, 0);
         
+        
         btn.setOnAction((ActionEvent e) -> {
             try {
-                List<String> stringList = new LinkedList<>();
-                textFieldList.forEach((textField) -> {
-                    stringList.add(textField.getText());
-                });
+                if (chart != null) {
+                    chart.dispose();
+                }
+                boolean isChartNull = chartView == null;
+                if (chartView == null) {
+                    chartView = new ImageView();
+                }
+                chart = factory.newChart(Quality.Nicest, IChartComponentFactory.Toolkit.offscreen);   
+                factory.bind(chartView, (AWTChart) chart);             
                 float min = -10;
                 float max = 10;
                 int n = 40;
@@ -123,17 +136,21 @@ public class JavaPlotter extends Application {
                 } catch (NumberFormatException nex) {
                     
                 }
+                //ContourChart ch = (ContourChart) ContourChartComponentFactory.chart(Quality.Nicest, IChartComponentFactory.Toolkit.offscreen);
+                for (TextField textField : textFieldList) {
+                    chart.add(ChartPlotter.getShape(textField.getText(), min, max, n));
+                }
                 
-                JavaFXChartFactory factory = new JavaFXChartFactory();
-                AWTChart chart = ChartPlotter.get3DAWTChart(factory, stringList, min, max, n);
+                if (isChartNull) {
+                    chart.setViewMode(ViewPositionMode.FREE);
+                    grid.add(chartView, 1, labelList.size() + 1, 20, 1);
+                    primaryStage.sizeToScene();
+                }
 
-                ImageView view = factory.bindImageView(chart);
-                grid.add(view, 1, labelList.size() + 1, 20, 1);
-                primaryStage.sizeToScene();
+                //AWTChart chart = ChartPlotter.get3DAWTChart(factory, stringList, min, max, n);
                 //ChartLauncher.openChart(c, stringList.get(0));
                 //c.open(stringList.get(0), 800, 600);
             } catch (Exception ex) {
-                
             }
         });
         
@@ -177,6 +194,8 @@ public class JavaPlotter extends Application {
             Platform.exit();
             System.exit(0);
         });
+        primaryStage.show();
+        
     }
     
     private void addNewRow() {

@@ -157,6 +157,7 @@ public class ChartPlotter {
             Shape shape = Builder.buildOrthonormal(mapper, new Range(min, max), steps);
             //shape.setColorMapper(new ColorMapper(new ColorMapGrayscale(), shape.getBoundingBoxColor()));
             shape.setFaceDisplayed(false);
+            shape.setWireframeColor(Color.BLUE);
             //shape.setWireframeColor(colors[i % colors.length]);
             shape.setWireframeDisplayed(true);
             return shape;
