@@ -31,18 +31,26 @@ import org.jzy3d.chart.ChartLauncher;
 /**
  *
  * @author bowen
- */
-public class JavaPlotter extends Application {
+ * 
 
-    /**
-     * @param args the command line arguments
-     */
+    Interesting libraries
+    https://github.com/mzur/pretty-formula
+    http://www.japisoft.com/formula/
+    http://jeval.sourceforge.net/
+    https://stackoverflow.com/questions/11117158/java-formula-evaluation-library-with-out-of-order-variables-feature
+
+*/
+
+public class JavaPlotter extends Application {
     
     private final List<Label> labelList = new LinkedList<>();
     private final List<TextField> textFieldList = new LinkedList<>();
     
     private GridPane grid = new GridPane();
     
+    /**
+     * @param args the command line arguments
+     */
     public static void main(String[] args) {
         Application.launch(args);
     }
